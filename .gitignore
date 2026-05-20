@@ -1,0 +1,338 @@
+# ============================================================
+# .gitignore — Data Centers × Superfund
+# Python · Jupyter · DVC · Geospatial · Data Journalism
+# ============================================================
+
+
+# ── DATA ────────────────────────────────────────────────────
+# All data is tracked by DVC, not Git
+data/raw/
+data/processed/
+data/interim/
+data/external/
+
+# But keep the directory structure
+!data/.gitkeep
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/interim/.gitkeep
+!data/external/.gitkeep
+
+# Common data file formats
+*.csv
+*.tsv
+*.json
+*.geojson
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
+*.sbx
+*.sbn
+*.qpj
+*.gpkg
+*.gdb/
+*.kml
+*.kmz
+*.gml
+*.parquet
+*.feather
+*.arrow
+*.h5
+*.hdf5
+*.nc
+*.tif
+*.tiff
+*.img
+*.asc
+*.dem
+*.xlsx
+*.xls
+*.ods
+*.sqlite
+*.db
+
+# Allow .dvc pointer files (these ARE committed to Git)
+!*.dvc
+!.dvc/config
+!.dvc/.gitignore
+
+
+# ── PYTHON ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.pyo
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+pytestdebug.log
+
+# Type checkers
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+# Profiling
+*.prof
+
+
+# ── VIRTUAL ENVIRONMENTS ────────────────────────────────────
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+conda-env/
+.python-version       # pyenv
+
+#--- R-Checkpoints ---------
+.Rhistory
+
+
+# ── JUPYTER ─────────────────────────────────────────────────
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Strip outputs before committing notebooks
+# (use nbstripout or pre-commit hook instead of ignoring whole files)
+# Uncomment the line below ONLY if you want to ignore notebooks entirely:
+# *.ipynb
+
+# Jupyter lab settings
+.jupyter/
+jupyter_lab_config.py
+
+
+# ── ENVIRONMENT & SECRETS ───────────────────────────────────
+.env
+.env.*
+.envrc                # direnv
+*.env
+secrets.yaml
+secrets.yml
+secrets.json
+credentials.json
+*_credentials.*
+*_secrets.*
+service_account*.json
+token.json
+.netrc
+
+
+# ── DVC ─────────────────────────────────────────────────────
+# DVC internal cache and tmp — NOT the .dvc pointer files
+.dvc/cache/
+.dvc/tmp/
+.dvc/plots/
+
+
+# ── REPORTS & OUTPUTS ───────────────────────────────────────
+# Keep figures dir but ignore generated output files
+reports/figures/*.png
+reports/figures/*.jpg
+reports/figures/*.jpeg
+reports/figures/*.svg
+reports/figures/*.pdf
+reports/figures/*.html
+
+# But keep placeholder
+!reports/figures/.gitkeep
+
+# Generated reports
+reports/*.pdf
+reports/*.html
+
+
+# ── GEOSPATIAL TOOLS ────────────────────────────────────────
+# QGIS
+*.qgz
+*.qgs
+*.qgs~
+*.qgz~
+.qgis2/
+
+# GDAL / OGR temporary files
+*.aux.xml
+*.ovr
+*.vrt.ovr
+
+# Mapbox / Tippecanoe
+*.mbtiles
+
+# PostGIS dump files
+*.dump
+*.sql.gz
+
+
+# ── IDEs & EDITORS ──────────────────────────────────────────
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# PyCharm / JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Vim / Neovim
+*.swp
+*.swo
+*~
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+.\#*
+.dir-locals.el
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Spyder
+.spyderproject.cfg
+.spyproject/
+
+
+# ── OS ──────────────────────────────────────────────────────
+# macOS
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+
+# ── LOGS & TEMP ─────────────────────────────────────────────
+*.log
+*.out
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.pid
+logs/
+tmp/
+temp/
+
+
+# ── NODE (if any JS tooling eg Vega, Observable) ────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.npm
+.eslintcache
+
+
+# ── DOCKER ──────────────────────────────────────────────────
+.docker/
+docker-compose.override.yml
+
+
+# ── MISC ────────────────────────────────────────────────────
+# Compressed archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.gz
+*.bz2
+*.xz
+
+# Large model / embedding files
+*.pkl
+*.pickle
+*.joblib
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.safetensors
+*.npy
+*.npz
