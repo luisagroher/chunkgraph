@@ -15,17 +15,18 @@ Output:
     data/raw/10ks/           raw .htm filing files
     data/manifest.csv        index of all downloaded filings
 """
-
+import os
 import requests
 import time
 import json
 import csv
 import argparse
 from pathlib import Path
+from dotenv import load_dotenv
 
 # ── Required by SEC: identify yourself in User-Agent ──────────────────────────
 HEADERS = {
-    "User-Agent": "YOUR_NAME your@email.com",   # <-- update this
+    "User-Agent": os.environ["EDGAR_USER_AGENT"],
     "Accept-Encoding": "gzip, deflate",
     "Accept": "application/json, text/html",
 }
@@ -85,7 +86,7 @@ def get_company_facts(cik: str) -> dict:
     return resp.json()
 
 
-def find_companies_by_sector(sector: str, max_companies: int) -> list[dict]:
+def find_companies_by_sector(sector: str, max_companies: int = 10) -> list[dict]:
     """
     Strategy: pull all tickers, then check each company's SIC code
     from their submissions JSON. Filter to target SIC codes.
