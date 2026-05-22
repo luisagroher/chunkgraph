@@ -127,18 +127,16 @@ def save_graph(G: nx.DiGraph, output_dir: Path) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     filename    = f"{G.graph['cik']}_{G.graph['filing_date']}.json"
     output_path = output_dir / filename
-    data        = json_graph.node_link_data(G)
+    data        = json_graph.node_link_data(G, edges='edges')
     with open(output_path, "w") as f:
         json.dump(data, f, indent=2)
     return output_path
-
 
 def load_graph(path: Path) -> nx.DiGraph:
     """Load a graph from node-link JSON."""
     with open(path) as f:
         data = json.load(f)
-    return json_graph.node_link_graph(data, directed=True)
-
+    return json_graph.node_link_graph(data, directed=True, edges='edges')
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
 
