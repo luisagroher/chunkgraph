@@ -123,6 +123,7 @@ def graph_stats(G: nx.DiGraph, parsed: dict) -> dict:
 # ── Serialization ──────────────────────────────────────────────────────────────
 
 def save_graph(G: nx.DiGraph, output_dir: Path) -> Path:
+    """Serialize graph to node-link JSON. Returns output path."""
     output_dir.mkdir(parents=True, exist_ok=True)
     filename    = f"{G.graph['cik']}_{G.graph['filing_date']}.json"
     output_path = output_dir / filename
@@ -132,6 +133,7 @@ def save_graph(G: nx.DiGraph, output_dir: Path) -> Path:
     return output_path
 
 def load_graph(path: Path) -> nx.DiGraph:
+    """Load a graph from node-link JSON."""
     with open(path) as f:
         data = json.load(f)
     return json_graph.node_link_graph(data, directed=True, edges='edges')
