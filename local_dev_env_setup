@@ -1,0 +1,2 @@
+# For local testing
+export EDGAR_USER_AGENT="youremail@youremail.com"

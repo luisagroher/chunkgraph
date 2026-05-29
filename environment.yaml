@@ -16,6 +16,8 @@ dependencies:
   # Notebook
   - jupyter
   - ipykernel
+  # Testing
+  - pytest
   - pip:
     # Retrieval / embeddings
     - scikit-learn
@@ -26,6 +28,29 @@ dependencies:
     - evaluate
     - torch --index-url https://download.pytorch.org/whl/cpu
     - faiss-cpu
+    # LLM-driven scraping spike (pinned to 1.x: 2.0+ requires Python 3.12).
+    # scrapegraphai's own >=X constraints resolve to current langchain/langgraph
+    # releases that have since dropped APIs it imports unconditionally (e.g.
+    # ChatOllama moved out of langchain_community). Pinned here to the exact
+    # snapshot scrapegraphai==1.76.0 was tested against (its own uv.lock at
+    # that tag) so installs stay reproducible.
+    - scrapegraphai==1.76.0
+    - langchain==1.2.0
+    - langchain-core==1.2.3
+    - langchain-community==0.4.1
+    - langchain-text-splitters==1.1.0
+    - langgraph==1.0.5
+    - langgraph-checkpoint==3.0.1
+    - langgraph-prebuilt==1.0.5
+    - langgraph-sdk==0.3.1
+    - langchain-aws==1.1.0
+    - langchain-ollama==1.0.1
+    - langchain-mistralai==1.1.1
+    - langchain-openai==1.1.6
+    - langchain-classic==1.0.0
+    - langsmith==0.5.0
+    - openai==2.13.0
+    - pydantic==2.12.5
     # Visualization
     - pyvis
     # Code quality
