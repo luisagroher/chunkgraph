@@ -22,7 +22,6 @@ import json
 import csv
 import argparse
 from pathlib import Path
-from dotenv import load_dotenv
 
 # ── Required by SEC: identify yourself in User-Agent ──────────────────────────
 HEADERS = {

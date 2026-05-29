@@ -1,0 +1,2 @@
+# For local testing
+export EDGAR_USER_AGENT="Mozilla/5.0"

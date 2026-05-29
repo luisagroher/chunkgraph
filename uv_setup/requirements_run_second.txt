@@ -1,0 +1,18 @@
+# Data pipeline
+requests
+beautifulsoup4
+lxml
+pandas
+# Graph
+networkx
+# Notebook
+jupyter
+ipykernel
+# Retrieval / embeddings
+sentence-transformers
+faiss-cpu
+# Visualization
+pyvis
+# Code quality
+black
+ruff
