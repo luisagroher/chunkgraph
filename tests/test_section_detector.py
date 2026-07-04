@@ -1,8 +1,19 @@
 """ZOMBIES tests for TOC-anchor and regex-fallback section detection."""
 
+from pathlib import Path
+
 from bs4 import BeautifulSoup
 
-from parser.section_detector import extract_toc_anchors, find_section_elements_via_regex, resolve_title
+from parser.html_utils import clean_html
+from parser.section_detector import (
+    extract_toc_anchors,
+    extract_section_text,
+    find_section_elements_via_anchors,
+    find_section_elements_via_regex,
+    resolve_title,
+)
+
+FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def _soup(html: str) -> BeautifulSoup:
@@ -122,3 +133,87 @@ def test_boundary_resolve_title_returns_empty_string_when_nothing_follows():
     # Boundary: no non-empty text anywhere after start_el.
     soup = _soup('<html><body><div id="x"></div></body></html>')
     assert resolve_title(soup.find(id="x"), "item_1a") == ""
+
+
+def test_one_extract_section_text_reads_a_direct_sibling_paragraph():
+    # One: the simple case, a single sibling paragraph.
+    soup = _soup('<html><body><div id="start"></div><p>Body text.</p></body></html>')
+    start_el = soup.find(id="start")
+    assert extract_section_text(start_el, None) == "Body text."
+
+
+def test_exception_extract_section_text_survives_nested_wrapper_div():
+    # Exception (bug 4): a later paragraph is wrapped in extra <div>s, so it
+    # has no direct-sibling relationship to start_el. Sibling-walking would
+    # stop as soon as start_el's own wrapper ends, truncating this text.
+    soup = _soup(
+        """
+        <html><body>
+            <div id="start"></div>
+            <p>First paragraph.</p>
+            <div><div><p>Second paragraph, nested two levels deep.</p></div></div>
+        </body></html>
+        """
+    )
+    start_el = soup.find(id="start")
+    text = extract_section_text(start_el, None)
+    assert "First paragraph." in text
+    assert "Second paragraph, nested two levels deep." in text
+
+
+def test_boundary_extract_section_text_stops_at_end_el():
+    # Boundary: text extraction stops at end_el, not past it.
+    soup = _soup(
+        '<html><body><div id="start"></div><p>Included.</p>'
+        '<div id="end"></div><p>Not included.</p></body></html>'
+    )
+    start_el = soup.find(id="start")
+    end_el = soup.find(id="end")
+    text = extract_section_text(start_el, end_el)
+    assert "Included." in text
+    assert "Not included." not in text
+
+
+def test_zero_extract_section_text_no_content_between_boundaries():
+    # Zero: start_el immediately followed by end_el yields empty text.
+    soup = _soup('<html><body><div id="start"></div><div id="end"></div></body></html>')
+    start_el = soup.find(id="start")
+    end_el = soup.find(id="end")
+    assert extract_section_text(start_el, end_el) == ""
+
+
+def test_many_extract_section_text_does_not_double_count_inline_tags():
+    # Many: a paragraph with an inline <a> cross-reference must contribute
+    # its surrounding text exactly once, not duplicated by both the <p>
+    # and its <a> child contributing the same substring.
+    soup = _soup(
+        '<html><body><div id="start"></div>'
+        "<p>See <a href=\"#note7\">Note 7</a> for details.</p>"
+        "</body></html>"
+    )
+    start_el = soup.find(id="start")
+    text = extract_section_text(start_el, None)
+    assert text == "See Note 7 for details."
+
+
+def test_interface_parses_real_aep_toc_fragment_end_to_end():
+    # Interface: a trimmed real fragment (split-cell TOC, empty anchor
+    # placeholder, inline <a> inside a paragraph) run through the whole
+    # anchor -> title -> text pipeline together, not just each fix in
+    # isolation. This is the actual filing (AEP) that used to parse to
+    # zero sections before these fixes.
+    raw = (FIXTURES / "aep_toc_and_item1a.htm").read_bytes()
+    soup = clean_html(BeautifulSoup(raw, "lxml"))
+
+    anchors = extract_toc_anchors(soup)
+    assert anchors["item_1a"] == "i8af612e789af49f28932152c327dbde7_58"
+    assert anchors["item_1b"] == "i8af612e789af49f28932152c327dbde7_61"
+
+    elements = find_section_elements_via_anchors(soup, anchors)
+    title = resolve_title(elements["item_1a"], "item_1a")
+    text = extract_section_text(elements["item_1a"], elements["item_1b"])
+
+    assert title == "ITEM 1A. RISK FACTORS"
+    assert "GENERAL RISKS OF REGULATED OPERATIONS" in text
+    assert "see Note 6 for details" in text
+    assert "UNRESOLVED STAFF COMMENTS" not in text  # stops at item_1b

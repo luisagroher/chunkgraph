@@ -2,7 +2,7 @@
 
 import re
 
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, NavigableString, Tag
 
 from parser.html_utils import get_text_clean, next_nonempty_text_element
 from parser.models.section import Section
@@ -203,20 +203,26 @@ def extract_section_text(
     end_el:   Tag | None,
 ) -> str:
     """
-    Extract text between start_el and end_el by walking siblings.
-    If end_el is None, collect until end of document.
+    Extract text between start_el and end_el by walking the document in
+    order. If end_el is None, collect until end of document.
+
+    Walks .next_elements (document order) rather than .next_sibling: a
+    heading that sits inside a nested wrapper <div>/<table> has no further
+    siblings once its wrapper ends, so sibling-walking would silently
+    truncate the section there. Only NavigableString text nodes are
+    collected (never a Tag's aggregated .get_text()), so a container and
+    its descendants can't both contribute the same text twice.
     """
-    texts  = []
-    el     = start_el.next_sibling
-
-    while el is not None:
-        if end_el and el == end_el:
+    texts = []
+    for el in start_el.next_elements:
+        if end_el is not None and el is end_el:
             break
-        if isinstance(el, Tag):
-            texts.append(get_text_clean(el))
-        el = el.next_sibling
+        if isinstance(el, NavigableString):
+            text = str(el).strip()
+            if text:
+                texts.append(text)
 
-    return " ".join(t for t in texts if t)
+    return re.sub(r"\s+", " ", " ".join(texts)).strip()
 
 
 def extract_notes(soup: BeautifulSoup) -> dict[str, Section]:
