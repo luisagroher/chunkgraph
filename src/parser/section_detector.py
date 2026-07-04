@@ -4,7 +4,7 @@ import re
 
 from bs4 import BeautifulSoup, Tag
 
-from parser.html_utils import get_text_clean
+from parser.html_utils import get_text_clean, next_nonempty_text_element
 from parser.models.section import Section
 from parser.xref_extractor import SECTION_PATTERNS, NOTE_PATTERN
 
@@ -141,6 +141,29 @@ def find_section_elements_via_anchors(
         if el:
             elements[section_id] = el
     return elements
+
+
+def resolve_title(start_el: Tag, section_id: str) -> str:
+    """
+    Get the heading text for a section's start element. Usually start_el
+    IS the heading (regex-fallback path). Some TOC anchors instead resolve
+    to an empty placeholder element sitting just before the real heading —
+    in that case, scan forward for the first element that actually matches
+    this section's own heading pattern (not just any non-empty text, which
+    could land on repeated page boilerplate like "Table of Contents"
+    sitting between the anchor and the real heading).
+    """
+    text = get_text_clean(start_el)
+    if text:
+        return text
+
+    pattern = SECTION_PATTERNS.get(section_id)
+    matches = (
+        (lambda candidate: len(candidate) <= 120 and re.search(pattern, candidate, re.IGNORECASE))
+        if pattern else None
+    )
+    found = next_nonempty_text_element(start_el, matches=matches)
+    return get_text_clean(found) if found is not None else ""
 
 
 def _scan_heading_candidates(candidates, elements: dict[str, Tag]) -> None:

@@ -2,7 +2,7 @@
 
 from bs4 import BeautifulSoup
 
-from parser.section_detector import extract_toc_anchors, find_section_elements_via_regex
+from parser.section_detector import extract_toc_anchors, find_section_elements_via_regex, resolve_title
 
 
 def _soup(html: str) -> BeautifulSoup:
@@ -83,3 +83,42 @@ def test_boundary_find_section_elements_via_regex_ignores_incidental_body_text()
     # the new bold-style pass (it has no font-weight style at all).
     soup = _soup("<html><body><div><span>as discussed in Item 7 above</span></div></body></html>")
     assert find_section_elements_via_regex(soup) == {}
+
+
+def test_one_resolve_title_reads_start_element_directly():
+    # One: the regex-fallback path's start_el already IS the heading.
+    soup = _soup("<html><body><p>Item 1A. Risk Factors</p></body></html>")
+    assert resolve_title(soup.p, "item_1a") == "Item 1A. Risk Factors"
+
+
+def test_exception_resolve_title_scans_forward_past_empty_anchor_div():
+    # Exception (bug 3): the TOC anchor resolves to an empty placeholder
+    # div sitting just before the real heading.
+    soup = _soup(
+        '<html><body><div id="x"></div><hr/>'
+        '<div><span style="font-weight:700">ITEM 1A. RISK FACTORS</span></div>'
+        "</body></html>"
+    )
+    start_el = soup.find(id="x")
+    assert resolve_title(start_el, "item_1a") == "ITEM 1A. RISK FACTORS"
+
+
+def test_exception_resolve_title_skips_boilerplate_nav_text_between_anchor_and_heading():
+    # Exception (bug 3 regression guard): a repeated "Table of Contents"
+    # nav link sits between the empty anchor and the real heading — must
+    # not be mistaken for the title just because it's the first non-empty
+    # text found.
+    soup = _soup(
+        '<html><body><div id="x"></div>'
+        '<div>Table of Contents Index to Financial Statements</div>'
+        '<div><span style="font-weight:700">ITEM 1A. RISK FACTORS</span></div>'
+        "</body></html>"
+    )
+    start_el = soup.find(id="x")
+    assert resolve_title(start_el, "item_1a") == "ITEM 1A. RISK FACTORS"
+
+
+def test_boundary_resolve_title_returns_empty_string_when_nothing_follows():
+    # Boundary: no non-empty text anywhere after start_el.
+    soup = _soup('<html><body><div id="x"></div></body></html>')
+    assert resolve_title(soup.find(id="x"), "item_1a") == ""

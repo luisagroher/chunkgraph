@@ -28,13 +28,14 @@ from dataclasses import asdict
 from bs4 import BeautifulSoup
 
 from parser.models import Section, ParsedFiling
-from parser.html_utils import clean_html, get_text_clean
+from parser.html_utils import clean_html
 from parser.section_detector import (
     extract_toc_anchors,
     find_section_elements_via_anchors,
     find_section_elements_via_regex,
     extract_section_text,
     extract_notes,
+    resolve_title,
 )
 from parser.xref_extractor import SECTION_PATTERNS, extract_xrefs_from_text
 
@@ -82,7 +83,7 @@ def parse_filing(
         end_el   = section_elements[next_id] if next_id else None
 
         text  = extract_section_text(start_el, end_el)
-        title = get_text_clean(start_el)
+        title = resolve_title(start_el, section_id)
 
         filing.sections[section_id] = Section(
             section_id = section_id,
